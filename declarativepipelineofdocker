@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('pull code from github') {
+            steps {
+                git 'https://github.com/1995lovely/dockerfiles.git' 
+            }
+        }
+        stage('build dockerfile into docker image'){
+            steps{
+                sh 'docker image build -t new_image1 .'
+                sh 'docker image tag new_image1 nirbhaisingh/new_image1'
+                
+            }
+        }
+        stage('push dockerimage to docker hubb'){
+            steps{
+              sh 'docker login -u nirbhaisingh -p <password>'
+              sh 'docker push nirbhaisingh/new_image1'
+           }
+        }
+        stage('Deployment'){
+            steps{
+                sshagent(['dockerhostpassword']) {
+    // some block
+    sh 'docker container run -p 8000:80 -d nirbhaisingh/new_image1 '
+
+}
+            }
+        }
+    }
+}
